@@ -10,8 +10,8 @@ import numpy
 from decimal import *
 
 
-from hepDataClasses import *
-from hepDataUtilities import *
+from HEPData.ExtractionTools.hepDataClasses import *
+from HEPData.ExtractionTools.hepDataUtilities import *
 
 import ROOT
 
@@ -44,7 +44,8 @@ parser.add_option("-l", "--legendEntry",
                         "Syntax for multiples is "
                         "'-l dataset1 -l dataset2' etc.")
                   )
-
+parser.add_option("-s", "--swapAxes", action="store_true", dest="swapAxes", default=False,
+                  help="signifies a plot in which the x value is the dependent variable")
 
 (arguments, args) = parser.parse_args()
 
@@ -60,8 +61,6 @@ if not arguments.legendEntries and not arguments.runTest:
 # initialize this so we can always look at it
 if not arguments.datasetsToIgnore:
     arguments.datasetsToIgnore = []
-
-NSIGFIGS = 2
 
 
 ###############################################################################
@@ -112,6 +111,23 @@ for index in range(nDatasets):
 
     if not data:
         continue
+
+    # swap the x and y values
+    if arguments.swapAxes:
+        swapped_data = []
+        for datum in data:
+            if hasattr(datum, 'errorLeft'):
+                swapped_data.append(Datum(datum.yValue,
+                                          datum.xValue,
+                                          datum.errorLeft,
+                                          datum.errorRight,
+                                          datum.errorDown,
+                                          datum.errorUp))
+            else:
+                swapped_data.append(Point(datum.yValue,
+                                          datum.xValue))
+
+        data = swapped_data
 
     # situation is normal, just write the dataset
     if data[0].xValue != data[-1].xValue:

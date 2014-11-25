@@ -15,7 +15,7 @@ from hepDataClasses import *
 
 import ROOT
 
-NSIGFIGS = 2
+NSIGFIGS = 3
 
 ###############################################################################
 ###############################################################################
@@ -197,28 +197,29 @@ def write_limit_table(datasets):
         exp = set_sigfigs(datasets["exp"].data[binIndex].yValue, NSIGFIGS)
 
         if "1sigma" in datasets and "2sigma" in datasets:
-            plus1 = set_sigfigs(datasets["1sigma"].data[binIndex].errorUp, NSIGFIGS)
-            minus1 = set_sigfigs(datasets["1sigma"].data[binIndex].errorDown, NSIGFIGS)
-            plus2 = set_sigfigs(datasets["2sigma"].data[binIndex].errorUp, NSIGFIGS)
-            minus2 = set_sigfigs(datasets["2sigma"].data[binIndex].errorDown, NSIGFIGS)
+            plus1 = set_sigfigs(datasets["1sigma"].data[binIndex].errorUp, NSIGFIGS-1)
+            minus1 = set_sigfigs(datasets["1sigma"].data[binIndex].errorDown, NSIGFIGS-1)
+            plus2 = set_sigfigs(datasets["2sigma"].data[binIndex].errorUp, NSIGFIGS-1)
+            minus2 = set_sigfigs(datasets["2sigma"].data[binIndex].errorDown, NSIGFIGS-1)
         elif "plus1sigma" in datasets and "plus2sigma" in datasets:
-            plus1 = set_sigfigs(datasets["plus1sigma"].data[binIndex].yValue - exp, NSIGFIGS)
-            minus1 = set_sigfigs(exp - datasets["minus1sigma"].data[binIndex].yValue, NSIGFIGS)
-            plus2 = set_sigfigs(datasets["plus2sigma"].data[binIndex].yValue - exp, NSIGFIGS)
-            minus2 = set_sigfigs(exp - datasets["minus2sigma"].data[binIndex].yValue, NSIGFIGS)
+            plus1 = set_sigfigs(datasets["plus1sigma"].data[binIndex].yValue - exp, NSIGFIGS-1)
+            minus1 = set_sigfigs(exp - datasets["minus1sigma"].data[binIndex].yValue, NSIGFIGS-1)
+            plus2 = set_sigfigs(datasets["plus2sigma"].data[binIndex].yValue - exp, NSIGFIGS-1)
+            minus2 = set_sigfigs(exp - datasets["minus2sigma"].data[binIndex].yValue, NSIGFIGS-1)
         else:
             print "error parsing limits"
             return
 
         line = []
         # add column of x-axis points
-        line.append(" " + str(x) + ";")
+        line.append(" " + str(remove_trailing_zero(x)) + ";")
         # add column of observed limits
-        line.append(str(obs) + ";")
+        line.append(str(remove_trailing_zero(obs)) + ";")
         # add column of expected +- 1 sigma
-        line.append(str(exp) + " +" + str(plus1) + "," + "-" + str(minus1) + ";")
+        line.append(str(remove_trailing_zero(exp)) + " +" + str(remove_trailing_zero(plus1)) + "," + "-" + str(remove_trailing_zero(minus1)) + ";")
         # add column of expected +- 2 sigma
-        line.append(str(exp) + " +" + str(plus2) + "," + "-" + str(minus2) + ";")      
+        line.append(str(remove_trailing_zero(exp)) + " +" + str(remove_trailing_zero(plus2)) + "," + "-" + str(remove_trailing_zero(minus2)) + ";")
+
 
         lines.append(line)       
 

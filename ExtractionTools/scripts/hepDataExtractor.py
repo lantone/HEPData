@@ -10,8 +10,8 @@ import numpy
 from decimal import *
 from datetime import datetime
 
-from hepDataClasses import *
-from hepDataUtilities import *
+from HEPData.ExtractionTools.hepDataClasses import *
+from HEPData.ExtractionTools.hepDataUtilities import *
 
 import ROOT
 #from ROOT import gROOT
