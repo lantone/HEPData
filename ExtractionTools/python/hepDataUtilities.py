@@ -265,7 +265,11 @@ def write_histogram_table(datasets):
             # for data, just put the number of observed events
             if is_data(dataset.legendEntry):
                 if datum.yValue > 0:
-                    line.append(str(remove_trailing_zero(datum.yValue)) + ";")
+                    if datum.yValue == int(datum.yValue):
+                        roundedValue = datum.yValue
+                    else:  # these data events are weighted!
+                        roundedValue = set_sigfigs(datum.yValue, NSIGFIGS)
+                    line.append(str(remove_trailing_zero(roundedValue)) + ";")
                 else:
                     line.append("-;")
             # for signal and background, match the precision of central value and error
@@ -422,20 +426,36 @@ def create_Dataset(legendEntry):
 ###############################################################################
 
 # function to process the input file and extract the legend object
-def extract_legend(inputFile):
+def extract_legend(inputFileName):
+    validCanvas = False
 
-    # run the input root macro and get the resulting canvas                                                                      
-    if ".C" in inputFile:
-        ROOT.gROOT.Macro(inputFile)
+    # suppress ROOT errors in the try blocks
+    ROOT.gROOT.ProcessLine("gErrorIgnoreLevel = 4000;")
+
+    # try to run the input file as a root macro and get the resulting canvas
+    try:
+        ROOT.gROOT.Macro(inputFileName)
         canvas = ROOT.gROOT.GetListOfCanvases()[0]
-    # get the first canvas from the input file                                                                                             
-    elif ".root" in arguments.inputFile:
-        inputFile = ROOT.TFile(inputFile)
-        objectName = ROOT.gDirectory.GetListOfKeys()[0].GetName()
-        canvas = inputFile.Get(objectName)
-    else:
+        validCanvas = True
+    except:
+        pass
+
+    if not validCanvas:
+        # try to get the first canvas from the input file
+        try:
+            inputFile = ROOT.TFile(inputFileName)
+            objectName = ROOT.gDirectory.GetListOfKeys()[0].GetName()
+            canvas = inputFile.Get(objectName)
+            validCanvas = True
+        except:
+            pass
+
+    if not validCanvas:
         print "invalid input file, quitting..."
         sys.exit(0)
+
+    # go back to showing ROOT errors
+    ROOT.gROOT.ProcessLine("gErrorIgnoreLevel = 3000;")
 
     # see if there's a pad within the canvas                                                                                               
     padName = "NONE"
